@@ -44,7 +44,7 @@
 		<property name="driverClass" value="com.mysql.jdbc.Driver" />
 		<property name="jdbcUrl" value="jdbc:mysql://localhost/fj36" />
 		<property name="user" value="root" />
-		<property name="password" value="mlec1226055" />
+		<property name="password" value="[sua senha]" />
 
 		<property name="minPoolSize" value="2" />
 		<property name="maxPoolSize" value="5" />
