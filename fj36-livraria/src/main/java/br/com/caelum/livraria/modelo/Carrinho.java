@@ -1,22 +1,17 @@
 package br.com.caelum.livraria.modelo;
 
-import java.io.Serializable;
-import java.math.BigDecimal;
-import java.rmi.Naming;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-
+import br.com.caelum.estoque.soap.*;
+import br.com.caelum.livraria.jms.EnviadorMensagemJms;
+import br.com.caelum.livraria.rest.ClienteRest;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import br.com.caelum.estoque.rmi.EstoqueRmi;
-import br.com.caelum.estoque.rmi.ItemEstoque;
-import br.com.caelum.livraria.jms.EnviadorMensagemJms;
-import br.com.caelum.livraria.rest.ClienteRest;
+import java.io.Serializable;
+import java.math.BigDecimal;
+import java.util.*;
 
 @Component
 @Scope("session")
@@ -156,17 +151,10 @@ public class Carrinho implements Serializable {
 		return false;
 	}
 
-//	private void atualizarQuantidadeDisponivelDoItemCompra(final ItemEstoque itemEstoque) {
-//		ItemCompra item = Iterables.find(this.itensDeCompra, new Predicate<ItemCompra>() {
-//
-//			@Override
-//			public boolean apply(ItemCompra item) {
-//				return item.temCodigo(itemEstoque.getCodigo());
-//			}
-//		});
-//
-//		item.setQuantidadeNoEstoque(itemEstoque.getQuantidade());
-//	}
+	private void atualizarQuantidadeDisponivelDoItemCompra(final ItemEstoque itemEstoque) {
+		ItemCompra item = Iterables.find(this.itensDeCompra, item1 -> item1.temCodigo(itemEstoque.getCodigo()));
+		item.setQuantidadeNoEstoque(itemEstoque.getQuantidade());
+	}
 
 	private void limparCarrinho() {
 		this.itensDeCompra = new LinkedHashSet<>();
@@ -228,14 +216,27 @@ public class Carrinho implements Serializable {
 		return numeroCartao != null && titularCartao != null;
 	}
 
-	public void verificarDisponibilidadeDosItensComRmi() throws Exception{
-		EstoqueRmi rmi = (EstoqueRmi)
-				Naming.lookup("rmi://localhost:1099/estoque");
-		
-		for (ItemCompra itemCompra : itensDeCompra) {
-			System.out.println("Verificação da quantidade do livro: " + itemCompra.getTitulo());
-			ItemEstoque itemEstoque = rmi.getItemEstoque(itemCompra.getCodigo());
-			itemCompra.setQuantidadeNoEstoque(itemEstoque.getQuantidade());
+//	public void verificarDisponibilidadeDosItensComRmi() throws Exception{
+//		EstoqueRmi rmi = (EstoqueRmi)
+//				Naming.lookup("rmi://localhost:1099/estoque");
+//
+//		for (ItemCompra itemCompra : itensDeCompra) {
+//			System.out.println("Verificação da quantidade do livro: " + itemCompra.getTitulo());
+//			ItemEstoque itemEstoque = rmi.getItemEstoque(itemCompra.getCodigo());
+//			itemCompra.setQuantidadeNoEstoque(itemEstoque.getQuantidade());
+//		}
+//	}
+
+
+	public void verificarDisponibilidadeDosItensComSoap(){
+		EstoqueWS service = new EstoqueWSService().getEstoqueWSPort();
+		ItensPeloCodigo parameter = new ItensPeloCodigo();
+		parameter.getCodigo().addAll(this.getCodigosDosItensImpressos());
+		ItensPeloCodigoResponse itensPeloCodigoResponse = service.itensPeloCodigo(parameter, "TOKEN123");
+		List<ItemEstoque> itensEstoque = itensPeloCodigoResponse.getItemEstoque();
+
+		for (ItemEstoque item:itensEstoque) {
+			atualizarQuantidadeDisponivelDoItemCompra(item);
 		}
 	}
 }
