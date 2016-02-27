@@ -1,8 +1,9 @@
 package br.com.caelum.payfast.modelo;
 
+import javax.xml.bind.annotation.XmlRootElement;
 import java.math.BigDecimal;
 
-
+@XmlRootElement
 public class Transacao {
 
 	private String numero;
