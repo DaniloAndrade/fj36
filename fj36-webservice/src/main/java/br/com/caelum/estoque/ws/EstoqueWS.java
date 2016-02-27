@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-@WebService
+@WebService(targetNamespace = "http://caelum.com.br/estoquews/v1")
 @Stateless
 public class EstoqueWS  {
 
@@ -30,7 +30,13 @@ public class EstoqueWS  {
 
 	@WebMethod(operationName = "ItensPeloCodigo")
 	@WebResult(name = "ItemEstoque")
-	public List<ItemEstoque> getQuantidade(@WebParam(name = "codigo") List<String> codigoProduto){
+	public List<ItemEstoque> getQuantidade(
+			@WebParam(name = "codigo") List<String> codigoProduto,
+			@WebParam(name = "tokenUsuario",header = true) String token){
+
+		if (token == null || !token.equals("TOKEN123")){
+			throw new AutorizacaoException("Nao autorizado");
+		}
 		
 		System.out.println("Verificando estoque do produto "+codigoProduto);
 		return codigoProduto.stream().map(repositorio::get).collect(Collectors.toList());
