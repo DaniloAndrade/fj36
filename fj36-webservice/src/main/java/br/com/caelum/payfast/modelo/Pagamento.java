@@ -32,7 +32,7 @@ public class Pagamento {
 		this.status = STATUS_CRIADO;
 		this.links.clear();
 		this.addLink(new Link(REL_CONFIRMAR, URI + this.getId(), "PUT"));
-		this.addLink(new Link(REL_CANCELAR, URI + this.getId(), "DELETE"));
+		this.addLink(new Link(REL_CANCELAR, URI + this.getId(), "PATCH"));
 	}
 
 	public void comStatusConfirmado() {
