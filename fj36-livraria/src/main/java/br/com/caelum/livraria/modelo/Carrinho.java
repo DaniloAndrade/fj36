@@ -1,5 +1,6 @@
 package br.com.caelum.livraria.modelo;
 
+import br.com.caelum.correios.soap.ConsumidorServicoCorreios;
 import br.com.caelum.estoque.soap.*;
 import br.com.caelum.livraria.jms.EnviadorMensagemJms;
 import br.com.caelum.livraria.rest.ClienteRest;
@@ -97,6 +98,10 @@ public class Carrinho implements Serializable {
 		this.cepDestino = novoCepDestino;
 
 		//servico web do correios aqui
+		ConsumidorServicoCorreios consumidorServicoCorreios = new ConsumidorServicoCorreios();
+		this.valorFrete = consumidorServicoCorreios.calculaFrete(cepDestino);
+
+
 	}
 
 	public String getCepDestino() {
@@ -229,6 +234,7 @@ public class Carrinho implements Serializable {
 
 
 	public void verificarDisponibilidadeDosItensComSoap(){
+
 		EstoqueWS service = new EstoqueWSService().getEstoqueWSPort();
 		ItensPeloCodigo parameter = new ItensPeloCodigo();
 		parameter.getCodigo().addAll(this.getCodigosDosItensImpressos());
